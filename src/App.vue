@@ -3,6 +3,12 @@ import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <RouterView />
+  <div class="flex grow mx-auto h-full">
+    <main class="grow content" id="content" role="main">
+      <div class="container-fixed">
+        <RouterView />
+      </div>
+    </main>
+  </div>
 </template>
 
