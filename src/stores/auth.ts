@@ -6,14 +6,14 @@ const apiKey = import.meta.env.VITE_API_KEY_FIREBASE
 
 export const useAuthStore = defineStore('auth', () => {
   const userInfo = reactive({
-    token: '',
+    token: localStorage.getItem('token') || '',  // Зчитуємо токен з localStorage при ініціалізації
     email: '',
     userId: '',
     refreshToken: '',
     expiresIn: '',
   })
   const error = ref('')
-  const loader = ref(false )
+  const loader = ref(false)
 
   const auth = async (payload: { email: string, password: string }, type: string) => {
     const stringUrl = type === 'signUp' ? 'signUp' : 'signInWithPassword'
@@ -27,29 +27,18 @@ export const useAuthStore = defineStore('auth', () => {
         password: payload.password,
         returnSecureToken: true
       })
-      userInfo.value = {
-        token: response.data.idToken,
-        email: response.data.email,
-        userId: response.data.localId,
-        refreshToken: response.data.refreshToken,
-        expiresIn: response.data.expiresIn,
-      }
-    } catch (err: Error)  {
-      switch (err.response?.data?.error?.message) {
-        case 'EMAIL_EXISTS':
-          error.value = 'Email already exists'
-          break;
-        case 'OPERATION_NOT_ALLOWED':
-          error.value = 'No account found'
-          break;
-        case 'Too_MANY_ATTEMPTS_TRY_LATER':
-          error.value = 'Too Many Attending'
-          break;
-        default:
-          error.value = 'Error'
-          break;
-      }
-      throw error.value
+
+      // Оновлюємо userInfo і зберігаємо токен в localStorage
+      userInfo.token = response.data.idToken
+      userInfo.email = response.data.email
+      userInfo.userId = response.data.localId
+      userInfo.refreshToken = response.data.refreshToken
+      userInfo.expiresIn = response.data.expiresIn
+
+      localStorage.setItem('token', response.data.idToken)  // Зберігаємо токен
+    } catch (err: any) {
+      error.value = err.response?.data?.error?.message || 'An error occurred'
+      throw new Error(error.value)
     } finally {
       loader.value = false
     }
