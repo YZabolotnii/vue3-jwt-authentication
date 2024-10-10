@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { reactive, ref } from 'vue'
 
-const apiKey = 'AIzaSyD4VOld6sJez388qyIyu65V_i7hP5mVpws'
+const apiKey = import.meta.env.VITE_API_KEY_FIREBASE
 
 export const useAuthStore = defineStore('auth', () => {
   const userInfo = reactive({
@@ -15,12 +15,14 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref('')
   const loader = ref(false )
 
-  const signup = async (payload: { email: string, password: string }) => {
+  const auth = async (payload: { email: string, password: string }, type: string) => {
+    const stringUrl = type === 'signUp' ? 'signUp' : 'signInWithPassword'
+
     error.value = ''
     loader.value = true
 
     try {
-      const response = await axios.post(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
+      const response = await axios.post(`https://identitytoolkit.googleapis.com/v1/accounts:${stringUrl}?key=${apiKey}`, {
         email: payload.email,
         password: payload.password,
         returnSecureToken: true
@@ -32,9 +34,8 @@ export const useAuthStore = defineStore('auth', () => {
         refreshToken: response.data.refreshToken,
         expiresIn: response.data.expiresIn,
       }
-      loader.value = false
-    } catch (err) {
-      switch (err.response.error.message) {
+    } catch (err: Error)  {
+      switch (err.response?.data?.error?.message) {
         case 'EMAIL_EXISTS':
           error.value = 'Email already exists'
           break;
@@ -48,12 +49,14 @@ export const useAuthStore = defineStore('auth', () => {
           error.value = 'Error'
           break;
       }
+      throw error.value
+    } finally {
       loader.value = false
     }
   }
 
   return {
-    signup,
+    auth,
     userInfo,
     error,
     loader
