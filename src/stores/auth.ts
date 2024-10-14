@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
 import { reactive, ref } from 'vue'
+import axiosApiInstance from '@/core/ApiService'
 
 const apiKey = import.meta.env.VITE_API_KEY_FIREBASE
 
@@ -14,12 +14,13 @@ interface User {
 
 export const useAuthStore = defineStore('auth', () => {
   const userInfo = reactive<User>({
-    token: localStorage.getItem('token') || '',  // Зчитуємо токен з localStorage при ініціалізації
+    token: localStorage.getItem('access') || '',
     email: '',
     userId: '',
-    refreshToken: '',
+    refreshToken: localStorage.getItem('refresh') || '',
     expiresIn: '',
   })
+
   const error = ref('')
   const loader = ref(false)
 
@@ -30,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
     loader.value = true
 
     try {
-      let response = await axios.post(`https://identitytoolkit.googleapis.com/v1/accounts:${stringUrl}?key=${apiKey}`, {
+      let response = await axiosApiInstance.post(`https://identitytoolkit.googleapis.com/v1/accounts:${stringUrl}?key=${apiKey}`, {
         email: payload.email,
         password: payload.password,
         returnSecureToken: true
@@ -43,7 +44,9 @@ export const useAuthStore = defineStore('auth', () => {
       userInfo.refreshToken = response.data.refreshToken
       userInfo.expiresIn = response.data.expiresIn
 
-      localStorage.setItem('token', response.data.idToken)  // Зберігаємо токен
+      localStorage.setItem('access', userInfo.token)
+      localStorage.setItem('refresh', userInfo.refreshToken)
+
     } catch (err: any) {
       error.value = err.response?.data?.error?.message || 'An error occurred'
       throw new Error(error.value)
@@ -52,8 +55,20 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const logout = () => {
+    userInfo.token = ''
+    userInfo.email = ''
+    userInfo.userId = ''
+    userInfo.refreshToken = ''
+    userInfo.expiresIn = ''
+
+    localStorage.setItem('access', '')
+    localStorage.setItem('refresh', '')
+  }
+
   return {
     auth,
+    logout,
     userInfo,
     error,
     loader

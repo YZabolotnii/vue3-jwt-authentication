@@ -7,7 +7,7 @@ defineProps({
 
 </script>
 <template>
-  <div class="max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
+  <div class="w-full bg-white rounded-lg shadow-lg overflow-hidden">
     <div class="p-4">
       <h3 class="text-lg font-bold text-gray-900"> {{ title }} </h3>
       <h4 class="text-sm text-gray-500"> {{ subtitle }} </h4>

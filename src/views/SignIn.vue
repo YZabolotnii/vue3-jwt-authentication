@@ -10,9 +10,9 @@ const router = useRouter()
 const email = ref<string>('')
 const password = ref<string>('')
 
-const signin = () => {
-  authStore.auth({ email: email.value, password: password.value }, 'signIn')
-  router.push('/main')
+const signin = async () => {
+    await authStore.auth({ email: email.value, password: password.value }, 'signInWithPassword')
+    router.push('/about')
 }
 </script>
 
