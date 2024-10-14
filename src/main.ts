@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import './core/ApiService'
 
 import App from './App.vue'
 import router from './router'
