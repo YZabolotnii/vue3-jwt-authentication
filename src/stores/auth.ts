@@ -4,8 +4,16 @@ import { reactive, ref } from 'vue'
 
 const apiKey = import.meta.env.VITE_API_KEY_FIREBASE
 
+interface User {
+  token: string;
+  email: string,
+  userId: string,
+  refreshToken: string,
+  expiresIn: string,
+}
+
 export const useAuthStore = defineStore('auth', () => {
-  const userInfo = reactive({
+  const userInfo = reactive<User>({
     token: localStorage.getItem('token') || '',  // Зчитуємо токен з localStorage при ініціалізації
     email: '',
     userId: '',
@@ -22,7 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
     loader.value = true
 
     try {
-      const response = await axios.post(`https://identitytoolkit.googleapis.com/v1/accounts:${stringUrl}?key=${apiKey}`, {
+      let response = await axios.post(`https://identitytoolkit.googleapis.com/v1/accounts:${stringUrl}?key=${apiKey}`, {
         email: payload.email,
         password: payload.password,
         returnSecureToken: true
